@@ -1,0 +1,14 @@
+DEFINE_PATCH_FUNCTION ~CHECK_ANIMATION~
+INT_VAR
+"school_num" = "0"
+"anim_num" = "0"
+STR_VAR
+"school_name" = ""
+
+BEGIN
+  PATCH_IF sp_school = "%school_num%" && cast_anim != "%anim_num%" THEN BEGIN
+    WRITE_SHORT 0x22 "%anim_num%"
+    READ_STRREF 0x8 spell_name
+    PATCH_PRINT ~%SOURCE_FILE% - %spell_name% set to %school_name% casting animation~
+  END
+END

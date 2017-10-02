@@ -1,0 +1,149 @@
+DEFINE_PATCH_FUNCTION ~INSERT_EXPIRE_MESSAGE~
+INT_VAR
+"offset" = "0"
+"mult" = "0"
+"duration" = "0"
+"target" = "0"
+STR_VAR
+"message" = ""
+BEGIN
+    INSERT_BYTES    (offset + (0x30 * mult))       0x30		  //add new effect
+      WRITE_SHORT   (offset + (0x30 * mult)) + 0x00 139		  //display string
+      WRITE_BYTE    (offset + (0x30 * mult)) + 0x02   ~%target%~  //target
+      SAY_EVALUATED (offset + (0x30 * mult)) + 0x04  ~%message%~
+      WRITE_BYTE    (offset + (0x30 * mult)) + 0x0C   4		  //timing mode: delay/permanent
+      WRITE_BYTE    (offset + (0x30 * mult)) + 0x0D   3		  //dispel mode
+      WRITE_LONG    (offset + (0x30 * mult)) + 0x0E  ~%duration%~  //duration
+      WRITE_BYTE    (offset + (0x30 * mult)) + 0x12  100	  //probability
+END
+
+DEFINE_PATCH_FUNCTION ~HANDLE_TARGET_GROUP~
+INT_VAR
+"targ" = 0
+"overrideDur" = 0
+STR_VAR
+"overrideName" = ""
+BEGIN
+  effAddTotal = 0
+  READ_STRREF 0x08 spellName
+  PATCH_IF NOT ("%overrideName%" STRING_EQUAL "") THEN BEGIN
+    TEXT_SPRINT spellName "%overrideName%"
+  END
+  READ_LONG   0x64 abOffset
+  READ_SHORT  0x68 abTotal
+  READ_LONG   0x6a efOffset
+  READ_SHORT  0x70 glTotal
+  FOR (abNum = 0; abNum < abTotal; abNum += 1) BEGIN
+    thisEfAdd = 0
+    //find the effect with the longest duration
+    READ_SHORT (abOffset + (0x28 * abNum) + 0x1E) thisEfNum
+    READ_SHORT (abOffset + (0x28 * abNum) + 0x20) thisEfFirst
+    thisEfFirst += effAddTotal
+    WRITE_SHORT (abOffset + (0x28 * abNum) + 0x20) thisEfFirst
+    longestDur = 0
+    PATCH_IF overrideDur = 0 THEN BEGIN
+      FOR (efNum = 0; efNum < thisEfNum; efNum += 1) BEGIN
+		READ_LONG (efOffset + (0x30 * (thisEfFirst + efNum)) + 0xE) dur
+		PATCH_IF dur > longestDur BEGIN
+			longestDur = dur
+		END
+	   END
+    END
+    PATCH_IF overrideDur > 0 THEN BEGIN
+      longestDur = overrideDur
+    END
+    LPF ~INSERT_EXPIRE_MESSAGE~ INT_VAR offset = efOffset mult = thisEfFirst duration = longestDur target = "%targ%"
+      STR_VAR message = ~%spellName% has expired~ END
+    effAddTotal += 1
+    thisEfAdd += 1
+    PATCH_FOR_EACH limit IN 6 12 30 60 120 BEGIN
+      PATCH_IF longestDur > limit BEGIN
+		LPF ~INSERT_EXPIRE_MESSAGE~ INT_VAR offset = efOffset mult = thisEfFirst duration = (longestDur - limit) target = "%targ%" 
+		STR_VAR message = ~%spellName% expires in %limit% seconds~ END
+		effAddTotal += 1
+		thisEfAdd += 1
+      END
+    END
+    WRITE_SHORT (abOffset + (0x28 * abNum) + 0x1E) (thisEfNum + thisEfAdd) //update ability effect #
+  END
+END
+
+//buffs that only target the caster
+ACTION_FOR_EACH ~spell~ IN ~SPPR109~ ~SPPR110~ ~SPPR111~ 
+			   ~SPPR206~ ~SPPR213~ ~SPPR214~
+			   ~SPPR412~ ~SPPR416~
+			   ~SPPR505~ ~SPPR513~ ~SPPR515~
+			   ~SPPR603~ ~SPPR613~ ~SPPR698~
+			   ~SPPR701~ ~SPPR725~ ~SPPR730~
+			   ~SPWI102~ ~SPWI107~ ~SPWI114~ ~SPWI120~
+			   ~SPWI201~ ~SPWI212~ ~SPWI219~ ~SPWI222~
+			   ~SPWI317~ ~SPWI318~
+			   ~SPWI403~ ~SPWI406~ ~SPWI416~ ~SPWI418~
+			   ~SPWI505~ ~SPWI511~ ~SPWI518~ ~SPWI519~ ~SPWI522~ ~SPWI590~ ~SPWI591~ ~SPWI592~
+			   ~SPWI593~ ~SPWI594~ ~SPWI595~ ~SPWI596~ ~SPWI597~
+			   ~SPWI602~ ~SPWI603~ ~SPWI607~ ~SPWI609~ ~SPWI611~ ~SPWI618~
+			   ~SPWI701~ ~SPWI703~ ~SPWI708~ ~SPWI723~
+			   ~SPWI804~ ~SPWI808~
+			   ~SPWI902~ ~SPWI907~ ~SPWI915~ ~SPWI916~
+			   ~SPIN103~
+			   ~SPCL907~
+  BEGIN
+  COPY_EXISTING ~%spell%.SPL~ ~override~
+    LPF ~HANDLE_TARGET_GROUP~ INT_VAR targ = 1 END
+  BUT_ONLY
+END
+
+ACTION_FOR_EACH ~spell~ IN ~SPPR101~ ~SPPR107~ ~SPPR108~
+			   ~SPPR201~ ~SPPR202~ ~SPPR210~
+			   ~SPPR306~ ~SPPR312~
+			   ~SPPR403~ ~SPPR407~ ~SPPR408~ ~SPPR409~ ~SPPR413~
+			   ~SPPR507~ ~SPPR508~ ~SPPR509~
+			   ~SPPR711~ 
+			   ~SPWI108~ ~SPWI113~
+			   ~SPWI209~ ~SPWI210~ ~SPWI214~
+			   ~SPWI305~ ~SPWI311~ ~SPWI319~ ~SPWI320~
+			   ~SPWI405~ ~SPWI414~
+			   ~SPWI512~ ~SPWI517~
+			   ~SPWI613~ ~SPWI606~
+			   ~SPWI702~ ~SPWI721~
+			   ~SPWI803~
+  BEGIN
+  COPY_EXISTING ~%spell%.SPL~ ~override~
+    LPF ~HANDLE_TARGET_GROUP~ INT_VAR targ = 2 END
+  BUT_ONLY
+END
+
+//spells that the longest duration isn't accurate for
+COPY_EXISTING ~SPWI921.SPL~ ~override~
+  LPF ~HANDLE_TARGET_GROUP~ INT_VAR targ = 1 overrideDur = 12 END
+BUT_ONLY
+
+ACTION_IF FILE_EXISTS_IN_GAME ~DW#QALAC.SPL~ THEN BEGIN
+  COPY_EXISTING ~DW#QALAC.SPL~ ~override~
+    LPF ~HANDLE_TARGET_GROUP~ INT_VAR targ = 1 overrideDur = 12 END
+  BUT_ONLY
+END
+
+//fixpack version of chant
+ACTION_IF FILE_EXISTS_IN_GAME ~SPPR203D.spl~ BEGIN
+  COPY_EXISTING ~SPPR203D.spl~ ~override~
+    LPF ~HANDLE_TARGET_GROUP~ INT_VAR targ = 1 STR_VAR overrideName = "Chant" END 
+  BUT_ONLY
+END
+
+//some mod-added spells
+ACTION_FOR_EACH filename IN ~dw#sp101~ ~dw#sp108~ ~dw#sp110~ ~dw#sp111~ ~dw#sp202~ ~dw#sp206~ ~dw#sp214~
+			    ~dw#sp306~ ~dw#sp403~ ~dw#sp406~ ~dw#sp409~ ~dw#sp412~ ~dw#sp501~ ~dw#sp506~
+			    ~dw#sp508~ ~dw#sp509~ ~dw#sp513~ ~dw#sp603~ ~dw#sp613~ ~dw#sp701~ ~dw#sp711~
+			    ~dw#sp725~ ~dw#sp703~ ~dw#sw102~ ~dw#sw114~ ~dw#sw206~ ~dw#sw212~ ~dw#sw305~
+			    ~dw#sw311~ ~dw#sw317~ ~dw#sw318~ ~dw#sw319~ ~dw#sw320~ ~dw#sw403~ ~dw#sw405~
+			    ~dw#sw406~ ~dw#sw418~ ~dw#sw505~ ~dw#sw512~ ~dw#sw517~ ~dw#sw518~ ~dw#sw519~
+			    ~dw#sw522~ ~dw#sw590~ ~dw#sw592~ ~dw#sw602~ ~dw#sw606~ ~dw#sw613~ ~dw#sw618~
+			    ~dw#sw701~ ~dw#sw702~ ~dw#sw902~ ~MELSPL01~ ~MELSPL03~
+BEGIN
+  ACTION_IF FILE_EXISTS_IN_GAME ~%filename%.spl~ BEGIN
+    COPY_EXISTING ~%filename%.spl~ ~override~
+      LPF ~HANDLE_TARGET_GROUP~ INT_VAR targ = 1 END
+    BUT_ONLY
+  END
+END

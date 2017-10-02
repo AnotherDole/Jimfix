@@ -1,0 +1,16 @@
+IF
+	!Global("ChainContingencyFired","LOCALS",1)
+THEN
+	RESPONSE #100
+		SetGlobal("ChainContingencyFired","LOCALS",1)
+		DisplayStringHead(Myself,26328)
+		ReallyForceSpell(Myself,PROTECTION_MAGIC_WEAPON_NOEFF)
+		ReallyForceSpell(Myself,WIZARD_MORDENKAINENS_SWORD)
+		ReallyForceSpell(Myself,SPELL_DEFLECTION_NO_VISUAL)
+		ReallyForceSpell(NearestEnemyOf(Myself),DRAGON_FEAR)
+		SetGlobalTimer("ElectrifiedFloorTimer","LOCALS",6)
+		SetGlobalTimer("TailSlap","LOCALS",12)
+		SetGlobalTimer("dragonbreath","LOCALS",1)
+		SetGlobalTimer("redefend","LOCALS",3)
+		Continue()
+END

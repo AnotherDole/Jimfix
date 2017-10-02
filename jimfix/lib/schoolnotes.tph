@@ -1,0 +1,119 @@
+//this code is borrowed and modified from aTweaks, which I believe was in turn a borrowed and modified version of code from Ascension64
+DEFINE_PATCH_FUNCTION ~ADD_SCHOOL_GLOBAL~
+INT_VAR
+"theRef" = "0"
+BEGIN
+  READ_LONG   0x64  ab_off
+  READ_SHORT  0x68  ab_num
+  READ_LONG   0x6a "fx_off"
+  READ_SHORT  0x70 "fx_num"
+    WRITE_SHORT 0x70 ("%fx_num%" + 1)                                              // mark one global effect as added
+    INSERT_BYTES   ("%fx_off%" +        ("%fx_num%" * 0x30)) 0x30                  // insert new effect
+      WRITE_SHORT  ("%fx_off%" +        ("%fx_num%" * 0x30)) 139                   // display string opcode
+      WRITE_BYTE   ("%fx_off%" + 0x02 + ("%fx_num%" * 0x30)) 1			   // target self
+      WRITE_LONG   ("%fx_off%" + 0x04 + ("%fx_num%" * 0x30)) "%theRef%"            // string to display 
+      WRITE_BYTE   ("%fx_off%" + 0x0c + ("%fx_num%" * 0x30)) 1                     // timing mode
+      WRITE_BYTE   ("%fx_off%" + 0x0d + ("%fx_num%" * 0x30)) 3                     // dispel/resist
+      WRITE_BYTE   ("%fx_off%" + 0x12 + ("%fx_num%" * 0x30)) 100                   // probability 1
+  //update ability headers to take into account the new global effect
+  FOR (count = 0; count < ab_num; count += 1) BEGIN
+    READ_SHORT  (ab_off + (count * 0x28) + 0x20) first_index
+    WRITE_SHORT (ab_off + (count * 0x28) + 0x20) (first_index + 1)
+  END
+END
+
+DEFINE_ACTION_FUNCTION ~ADD_SCHOOL_NOTIFICATIONS~
+INT_VAR
+"threshold" = "1"
+BEGIN
+  COPY_EXISTING_REGEXP GLOB ~SPWI[0-9]*\.spl\|SPPR[0-9]*\.spl~ ~override~
+    SET abjstring = RESOLVE_STR_REF("is casting an Abjuration spell") 
+    SET constring = RESOLVE_STR_REF("is casting a Conjuration spell")
+    SET divstring = RESOLVE_STR_REF("is casting a Divination spell")
+    SET encstring = RESOLVE_STR_REF("is casting an Enchantment spell")
+    SET illstring = RESOLVE_STR_REF("is casting an Illusion spell")
+    SET evostring = RESOLVE_STR_REF("is casting an Evocation spell")
+    SET necstring = RESOLVE_STR_REF("is casting a Necromancy spell")
+    SET altstring = RESOLVE_STR_REF("is casting an Alteration spell")
+    
+    READ_SHORT 0x22	      castanim
+    READ_LONG  0x64	      aboff
+    READ_SHORT (aboff + 0x12) castspeed
+    PATCH_IF castspeed > threshold THEN BEGIN
+      PATCH_IF castanim = 12 THEN BEGIN
+	LAUNCH_PATCH_FUNCTION ~ADD_SCHOOL_GLOBAL~ INT_VAR theRef = abjstring END	
+      END
+      PATCH_IF castanim = 14 THEN BEGIN
+	LAUNCH_PATCH_FUNCTION ~ADD_SCHOOL_GLOBAL~ INT_VAR theRef = constring END	
+      END
+      PATCH_IF castanim = 16 THEN BEGIN
+	LAUNCH_PATCH_FUNCTION ~ADD_SCHOOL_GLOBAL~ INT_VAR theRef = divstring END	
+      END
+      PATCH_IF castanim = 11 THEN BEGIN
+	LAUNCH_PATCH_FUNCTION ~ADD_SCHOOL_GLOBAL~ INT_VAR theRef = encstring END	
+      END
+      PATCH_IF castanim = 13 THEN BEGIN
+	LAUNCH_PATCH_FUNCTION ~ADD_SCHOOL_GLOBAL~ INT_VAR theRef = illstring END	
+      END
+      PATCH_IF castanim = 15 THEN BEGIN
+	LAUNCH_PATCH_FUNCTION ~ADD_SCHOOL_GLOBAL~ INT_VAR theRef = evostring END	
+      END
+      PATCH_IF castanim = 9 THEN BEGIN
+	LAUNCH_PATCH_FUNCTION ~ADD_SCHOOL_GLOBAL~ INT_VAR theRef = necstring END	
+      END
+      PATCH_IF castanim = 10 THEN BEGIN
+	LAUNCH_PATCH_FUNCTION ~ADD_SCHOOL_GLOBAL~ INT_VAR theRef = altstring END	
+      END
+    END
+  BUT_ONLY
+
+  //handle some SCS versions of vanilla spells
+  ACTION_FOR_EACH spellname IN 
+    ~dw#wisg1~ ~dw#wisg2~ ~dw#wisg3~ ~dw#wisg4~ ~dw#basum~ ~dw#cacof~ ~dw#devag~ ~dw#devae~ ~dw#elemp~
+    ~dw#gatep~ ~dw#harmn~ ~dw#plane~ ~dw#plang~ ~dw#qalac~ ~dw#sumef~ ~dw#sumgl~ ~dw#sumyu~ ~dw#sumyn~
+    ~dw#sumbf~ ~dw#sumya~ ~dw#gatem~ ~dw#sumco~
+  BEGIN
+    ACTION_IF FILE_EXISTS_IN_GAME ~%spellname%.spl~ BEGIN
+      COPY_EXISTING ~%spellname%.spl~ ~override~
+	SET abjstring = RESOLVE_STR_REF("is casting an Abjuration spell") 
+	SET constring = RESOLVE_STR_REF("is casting a Conjuration spell")
+	SET divstring = RESOLVE_STR_REF("is casting a Divination spell")
+	SET encstring = RESOLVE_STR_REF("is casting an Enchantment spell")
+	SET illstring = RESOLVE_STR_REF("is casting an Illusion spell")
+	SET evostring = RESOLVE_STR_REF("is casting an Evocation spell")
+	SET necstring = RESOLVE_STR_REF("is casting a Necromancy spell")
+	SET altstring = RESOLVE_STR_REF("is casting an Alteration spell")
+	
+	READ_SHORT 0x22	      castanim
+	READ_LONG  0x64	      aboff
+	READ_SHORT (aboff + 0x12) castspeed
+	PATCH_IF castspeed > threshold THEN BEGIN
+	  PATCH_IF castanim = 12 THEN BEGIN
+	    LAUNCH_PATCH_FUNCTION ~ADD_SCHOOL_GLOBAL~ INT_VAR theRef = abjstring END	
+	  END
+	  PATCH_IF castanim = 14 THEN BEGIN
+	    LAUNCH_PATCH_FUNCTION ~ADD_SCHOOL_GLOBAL~ INT_VAR theRef = constring END	
+	  END
+	  PATCH_IF castanim = 16 THEN BEGIN
+	    LAUNCH_PATCH_FUNCTION ~ADD_SCHOOL_GLOBAL~ INT_VAR theRef = divstring END	
+	  END
+	  PATCH_IF castanim = 11 THEN BEGIN
+	    LAUNCH_PATCH_FUNCTION ~ADD_SCHOOL_GLOBAL~ INT_VAR theRef = encstring END	
+	  END
+	  PATCH_IF castanim = 13 THEN BEGIN
+	    LAUNCH_PATCH_FUNCTION ~ADD_SCHOOL_GLOBAL~ INT_VAR theRef = illstring END	
+	  END
+	  PATCH_IF castanim = 15 THEN BEGIN
+	    LAUNCH_PATCH_FUNCTION ~ADD_SCHOOL_GLOBAL~ INT_VAR theRef = evostring END	
+	  END
+	  PATCH_IF castanim = 9 THEN BEGIN
+	    LAUNCH_PATCH_FUNCTION ~ADD_SCHOOL_GLOBAL~ INT_VAR theRef = necstring END	
+	  END
+	  PATCH_IF castanim = 10 THEN BEGIN
+	    LAUNCH_PATCH_FUNCTION ~ADD_SCHOOL_GLOBAL~ INT_VAR theRef = altstring END	
+	  END
+	END
+      BUT_ONLY
+    END
+  END
+END
