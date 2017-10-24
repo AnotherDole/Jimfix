@@ -68,6 +68,13 @@ BEGIN
   END
 END
 
+//Fix glitch that causes expiration notices to be wrong at high levels for Holy Power
+ACTION_IF FILE_EXISTS_IN_GAME ~SPPR412.SPL~ BEGIN
+	COPY_EXISTING ~SPPR412.SPL~ ~override~
+		LPF ALTER_SPELL_EFFECT INT_VAR match_opcode = 141 duration = 5 END
+	BUT_ONLY
+END
+
 //buffs that only target the caster
 ACTION_FOR_EACH ~spell~ IN ~SPPR109~ ~SPPR110~ ~SPPR111~ 
 			   ~SPPR206~ ~SPPR213~ ~SPPR214~
