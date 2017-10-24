@@ -98,12 +98,18 @@ affected but are not, please let me know.
 
 		--- Add expiration notifications for buffs ---
 
-This component adds periodic reminders to the combat log for when buffs are
-about to expire. The reminders come when there are 120, 60, 30, 12, and 6
+This component adds periodic reminders to the combat log for when spell buffs 
+are about to expire. The reminders come when there are 120, 60, 30, 12, and 6
 seconds remaining in the buff. I can add other options if there is interest.
 
 And again, please let me know if this component affects spells that it
 shouldn't or if it doesn't affect a spell that it should.
+
+		--- Add expiration notifications for item buffs ---
+
+This is the same as the previous component except with buffs from items.
+Mostly this affects potions and protection scrolls, but it also includes
+the Greenstone and Shield Amulets.
 
 			--- Reveal all hidden doors ---
 			

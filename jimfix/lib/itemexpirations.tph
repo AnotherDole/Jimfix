@@ -1,0 +1,69 @@
+DEFINE_PATCH_FUNCTION ~ITEM_EXPIRATION_NOTICES~
+INT_VAR
+"targetType" = "1"
+BEGIN
+	//I'm assuming that the item only has one ability 
+	READ_STRREF 0x0c itemName
+	READ_LONG   0x64 headerOffset
+	READ_LONG   0x6a featureOffset
+	READ_SHORT  (headerOffset + 0x1e) featureCount
+	longestDur = 0
+	FOR(featureNum = 0; featureNum < featureCount; featureNum += 1) BEGIN
+		READ_LONG ((featureOffset + featureNum * 48) + 0x0e) duration
+		PATCH_IF duration > longestDur BEGIN
+			longestDur = duration
+		END
+	END
+	stringToAdd = RESOLVE_STR_REF("%itemName% has expired.")
+	LPF ADD_ITEM_EFFECT INT_VAR opcode = 139 target = targetType timing = 4 header = 1 parameter1 = stringToAdd resist_dispel = 3 duration = longestDur END
+	PATCH_FOR_EACH limit IN 6 12 30 60 120 BEGIN
+		PATCH_IF longestDur > limit BEGIN
+			dur = longestDur - limit
+			stringToAdd = RESOLVE_STR_REF("%itemName% expires in %limit% seconds.")
+			LPF ADD_ITEM_EFFECT INT_VAR opcode = 139 target = targetType timing = 4 header = 1 parameter1 = stringToAdd resist_dispel = 3 duration = dur END
+		END
+	END
+END
+
+//Standard potions and reusable items
+ACTION_FOR_EACH ~item~ IN 
+	~POTN02~ ~POTN03~ ~POTN04~ ~POTN05~ ~POTN06~ ~POTN07~ ~POTN09~
+	~POTN11~ ~POTN12~ ~POTN14~ ~POTN15~ ~POTN16~ ~POTN18~ ~POTN19~
+	~POTN21~ ~POTN22~ ~POTN24~ ~POTN28~ ~POTN29~ ~POTN30~ ~POTN31~
+	~POTN33~ ~POTN34~ ~POTN35~ ~POTN36~ ~POTN37~ ~POTN38~ ~POTN39~
+	~POTN41~ ~POTN42~ ~POTN43~ ~POTN44~ ~POTN45~ ~POTN46~ ~POTN56~
+    ~AMUL15~ ~AMUL17~ //Shield and greenstone amulets
+	~BRAC16~ //Bracers of Blinding Strike
+BEGIN
+	ACTION_IF FILE_EXISTS_IN_GAME ~%item%.ITM~ BEGIN
+		COPY_EXISTING ~%item%.ITM~ ~override~
+			LPF ~ITEM_EXPIRATION_NOTICES~ INT_VAR targetType = 1 END
+		BUT_ONLY
+	END
+END
+
+//SCS versions of standard potions
+ACTION_FOR_EACH ~item~ IN 
+	~DW#PTN02~ ~DW#PTN03~ ~DW#PTN04~ ~DW#PTN05~ ~DW#PTN06~ ~DW#PTN07~ ~DW#PTN09~
+	~DW#PTN11~ ~DW#PTN12~ ~DW#PTN14~ ~DW#PTN15~ ~DW#PTN16~ ~DW#PTN18~ ~DW#PTN19~
+	~DW#PTN21~ ~DW#PTN22~ ~DW#PTN24~ ~DW#PTN28~ ~DW#PTN29~ ~DW#PTN30~ ~DW#PTN31~
+	~DW#PTN33~ ~DW#PTN34~ ~DW#PTN35~ ~DW#PTN36~ ~DW#PTN37~ ~DW#PTN38~ ~DW#PTN39~
+	~DW#PTN41~ ~DW#PTN42~ ~DW#PTN43~ ~DW#PTN44~ ~DW#PTN45~ ~DW#PTN46~ ~DW#PTN56~ 
+BEGIN
+	ACTION_IF FILE_EXISTS_IN_GAME ~%item%.ITM~ BEGIN
+		COPY_EXISTING ~%item%.ITM~ ~override~
+			LPF ~ITEM_EXPIRATION_NOTICES~ INT_VAR targetType = 1 END
+		BUT_ONLY
+	END
+END
+
+//Standard protection scrolls
+ACTION_FOR_EACH ~item~ IN 
+	~SCRL03~ ~SCRL04~ ~SCRL05~ ~SCRL06~ ~SCRL07~ ~SCRL08~ ~SCRL09~ ~SCRL15~
+BEGIN
+	ACTION_IF FILE_EXISTS_IN_GAME ~%item%.ITM~ BEGIN
+		COPY_EXISTING ~%item%.ITM~ ~override~
+			LPF ~ITEM_EXPIRATION_NOTICES~ INT_VAR targetType = 2 END
+		BUT_ONLY
+	END
+END	

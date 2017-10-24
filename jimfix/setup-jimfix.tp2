@@ -1,6 +1,6 @@
 BACKUP ~Jimfix/backup~
 AUTHOR ~anotherdole@gmail.com~
-VERSION ~v2.3~
+VERSION ~v2.4~
 
 README ~jimfix/readme/readme.txt~
 
@@ -139,6 +139,11 @@ BEGIN ~Add expiration notifications for buffs~
 DESIGNATED 300
 GROUP ~Tweaks~
 INCLUDE ~jimfix/lib/expirations.tph~
+
+BEGIN ~Add expiration notifications for item buffs~
+DESIGNATED 600
+GROUP ~Tweaks~
+INCLUDE ~jimfix/lib/itemexpirations.tph~
 
 BEGIN ~Reveal all hidden doors~
 DESIGNATED 500
