@@ -169,7 +169,7 @@ ACTION_IF FILE_EXISTS_IN_GAME ~SPWI909.SPL~ BEGIN
 	COPY_EXISTING ~SPWI909.SPL~ ~override~
 		PATCH_FOR_EACH limit IN 2 3 4 5 6 12 BEGIN
 			dur = 18 - limit
-			stringToAdd = RESOLVE_STR_REF("Time stop ends in %limit% seconds.")
+			stringToAdd = RESOLVE_STR_REF("Time stop ends in %limit% seconds")
 			LPF ADD_SPELL_EFFECT INT_VAR opcode = 139 target = 1 timing = 4 header = 1 parameter1 = stringToAdd resist_dispel = 3 duration = dur END
 		END
 		stringToAdd = RESOLVE_STR_REF("Time stop ends in 1 second.")
@@ -182,10 +182,30 @@ ACTION_IF FILE_EXISTS_IN_GAME ~SPCL912B.SPL~ BEGIN
 	COPY_EXISTING ~SPCL912B.SPL~ ~override~
 		PATCH_FOR_EACH limit IN 2 3 4 5 6 BEGIN
 			dur = 10 - limit
-			stringToAdd = RESOLVE_STR_REF("Time trap ends in %limit% seconds.")
+			stringToAdd = RESOLVE_STR_REF("Time trap ends in %limit% seconds")
 			LPF ADD_SPELL_EFFECT INT_VAR opcode = 139 target = 9 timing = 4 header = 1 parameter1 = stringToAdd resist_dispel = 3 duration = dur END
 		END
 		stringToAdd = RESOLVE_STR_REF("Time trap ends in 1 second.")
 	    LPF ADD_SPELL_EFFECT INT_VAR opcode = 139 target = 9 timing = 4 header = 1 parameter1 = stringToAdd resist_dispel = 3 duration = 9 END
 	BUT_ONLY
+END
+
+//Wish time stop and improved alacrity
+ACTION_FOR_EACH filename IN ~SPWISH17.SPL~ ~DW#WISH3.SPL~ BEGIN
+	ACTION_IF FILE_EXISTS_IN_GAME ~%filename%~ BEGIN
+		COPY_EXISTING ~%filename%~ ~override~
+			PATCH_FOR_EACH limit IN 12 6 BEGIN
+				dur = 24 - limit
+				stringToAdd = RESOLVE_STR_REF("Improved Alacrity expires in %limit% seconds")
+				LPF ADD_SPELL_EFFECT INT_VAR opcode = 139 target = 1 timing = 4 header = 1 parameter1 = stringToAdd resist_dispel = 3 duration = dur END
+			END
+			stringToAdd = RESOLVE_STR_REF("Improved Alacrity has expired")
+			LPF ADD_SPELL_EFFECT INT_VAR opcode = 139 target = 1 timing = 4 header = 1 parameter1 = stringToAdd resist_dispel = 3 duration = 24 END
+			PATCH_FOR_EACH limit IN 2 3 4 5 6 12 BEGIN
+				dur = 36 - limit
+				stringToAdd = RESOLVE_STR_REF("Time stop ends in %limit% seconds")
+				LPF ADD_SPELL_EFFECT INT_VAR opcode = 139 target = 1 timing = 4 header = 1 parameter1 = stringToAdd resist_dispel = 3 duration = dur END
+			END
+		BUT_ONLY
+	END
 END
