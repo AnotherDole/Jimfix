@@ -115,3 +115,10 @@ the Greenstone and Shield Amulets.
 			
 This component sets all hidden doors to be immediately selectable so that you
 don't have to wait for a character to detect them.
+
+	--- Allow Spell Shield to block Wish Breach and Mordenkainen's Disjunction ---
+	
+With SCS changes to the spell system, the Breach from Wish and the complete dispel
+from fallen solar's Mordenkainen's Disjunction are both completely unblockable.
+This component allows Spell Shield to block them as it would block any other
+anti-magic attack.

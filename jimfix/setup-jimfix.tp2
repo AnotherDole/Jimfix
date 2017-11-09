@@ -158,3 +158,51 @@ COPY_EXISTING_REGEXP GLOB ~.*\.are~ ~override~
 		END
 	END
 BUT_ONLY
+
+BEGIN ~Allow Spell Shield to block Wish Breach and Mordenkainen's Disjunction~
+DESIGNATED 700
+GROUP ~Tweaks~
+//Fix wish breach
+COPY_EXISTING ~DW#WISH1.SPL~ ~override/JF#WISHA.SPL~
+	LPF ALTER_SPELL_HEADER INT_VAR projectile = 1 END
+IF_EXISTS
+COPY_EXISTING ~SPWI513C.SPL~ ~override/JF#WISHB.SPL~
+IF_EXISTS
+ACTION_FOR_EACH filename IN ~DW#WISH1.SPL~ ~SPWISH26.SPL~ ~SPWISH38.SPL~ BEGIN
+	COPY_EXISTING ~%filename%~ ~override~
+		LPF DELETE_SPELL_EFFECT INT_VAR opcode_to_delete = ~-1~ END
+		LPF ADD_SPELL_EFFECT INT_VAR opcode = 146 target = 2 parameter2 = 1 timing = 1 STR_VAR resource = ~JF#WISHA~ END
+		LPF ADD_SPELL_EFFECT INT_VAR opcode = 146 target = 2 parameter2 = 1 timing = 1 STR_VAR resource = ~JF#WISHB~ END
+	IF_EXISTS
+END
+ACTION_FOR_EACH filename IN ~SPWI519.SPL~ ~DW#0W519.SPL~ ~DW#SW519.SPL~ BEGIN
+	COPY_EXISTING ~%filename%~ ~override~
+		FOR(level = 0; level < 10; level = level + 1) BEGIN
+			dur = 198 + level * 18
+			LPF ADD_SPELL_EFFECT INT_VAR header = (level + 1) opcode = 206 target = 1 power = 5 duration = dur STR_VAR resource = ~JF#WISHA~ END
+		END
+	IF_EXISTS
+END
+//Fix disjunction
+ACTION_IF FILE_EXISTS_IN_GAME ~DW#SOLDI.SPL~ BEGIN
+	COPY_EXISTING ~JF#WISHB.SPL~ ~override/JF#DISJB.SPL~
+		LPF ALTER_SPELL_HEADER INT_VAR projectile = 1 END
+		WRITE_LONG 0x34 8
+	IF_EXISTS
+	COPY_EXISTING ~DW#SOLDI.SPL~ ~override/JF#DISJA.SPL~
+		LPF ALTER_SPELL_HEADER INT_VAR projectile = 1 END
+	IF_EXISTS
+	COPY_EXISTING ~DW#SOLDI.SPL~ ~override~
+		LPF DELETE_SPELL_EFFECT INT_VAR opcode_to_delete = ~-1~ END
+		LPF ADD_SPELL_EFFECT INT_VAR opcode = 146 target = 2 parameter2 = 1 timing = 1 STR_VAR resource = ~JF#DISJA~ END
+		LPF ADD_SPELL_EFFECT INT_VAR opcode = 146 target = 2 parameter2 = 1 timing = 1 STR_VAR resource = ~JF#DISJB~ END
+	IF_EXISTS
+	ACTION_FOR_EACH filename IN ~SPWI519.SPL~ ~DW#0W519.SPL~ ~DW#SW519.SPL~ BEGIN
+		COPY_EXISTING ~%filename%~ ~override~
+			FOR(level = 0; level < 10; level = level + 1) BEGIN
+				dur = 198 + level * 18
+				LPF ADD_SPELL_EFFECT INT_VAR header = (level + 1) opcode = 206 target = 1 power = 5 duration = dur STR_VAR resource = ~JF#DISJA~ END
+			END
+		IF_EXISTS
+	END
+END
