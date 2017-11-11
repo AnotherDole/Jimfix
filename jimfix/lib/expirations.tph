@@ -4,6 +4,7 @@ INT_VAR
 "mult" = "0"
 "duration" = "0"
 "target" = "0"
+"dispel" = 3
 STR_VAR
 "message" = ""
 BEGIN
@@ -12,7 +13,7 @@ BEGIN
       WRITE_BYTE    (offset + (0x30 * mult)) + 0x02   ~%target%~  //target
       SAY_EVALUATED (offset + (0x30 * mult)) + 0x04  ~%message%~
       WRITE_BYTE    (offset + (0x30 * mult)) + 0x0C   4		  //timing mode: delay/permanent
-      WRITE_BYTE    (offset + (0x30 * mult)) + 0x0D   3		  //dispel mode
+      WRITE_BYTE    (offset + (0x30 * mult)) + 0x0D   ~%dispel%~  //dispel mode
       WRITE_LONG    (offset + (0x30 * mult)) + 0x0E  ~%duration%~  //duration
       WRITE_BYTE    (offset + (0x30 * mult)) + 0x12  100	  //probability
 END
@@ -21,6 +22,7 @@ DEFINE_PATCH_FUNCTION ~HANDLE_TARGET_GROUP~
 INT_VAR
 "targ" = 0
 "overrideDur" = 0
+"dispel" = 3
 STR_VAR
 "overrideName" = ""
 BEGIN
@@ -52,13 +54,13 @@ BEGIN
     PATCH_IF overrideDur > 0 THEN BEGIN
       longestDur = overrideDur
     END
-    LPF ~INSERT_EXPIRE_MESSAGE~ INT_VAR offset = efOffset mult = thisEfFirst duration = longestDur target = "%targ%"
+    LPF ~INSERT_EXPIRE_MESSAGE~ INT_VAR offset = efOffset mult = thisEfFirst duration = longestDur target = "%targ%" dispel = dispel
       STR_VAR message = ~%spellName% has expired~ END
     effAddTotal += 1
     thisEfAdd += 1
     PATCH_FOR_EACH limit IN 6 12 30 60 120 BEGIN
       PATCH_IF longestDur > limit BEGIN
-		LPF ~INSERT_EXPIRE_MESSAGE~ INT_VAR offset = efOffset mult = thisEfFirst duration = (longestDur - limit) target = "%targ%" 
+		LPF ~INSERT_EXPIRE_MESSAGE~ INT_VAR offset = efOffset mult = thisEfFirst duration = (longestDur - limit) target = "%targ%" dispel = dispel
 		STR_VAR message = ~%spellName% expires in %limit% seconds~ END
 		effAddTotal += 1
 		thisEfAdd += 1
@@ -75,7 +77,7 @@ ACTION_IF FILE_EXISTS_IN_GAME ~SPPR412.SPL~ BEGIN
 	BUT_ONLY
 END
 
-//buffs that only target the caster
+//Buffs that only target the caster and can be dispelled
 ACTION_FOR_EACH ~spell~ IN ~SPPR109~ ~SPPR110~ ~SPPR111~ 
 			   ~SPPR206~ ~SPPR213~ ~SPPR214~
 			   ~SPPR412~ ~SPPR416~
@@ -93,10 +95,9 @@ ACTION_FOR_EACH ~spell~ IN ~SPPR109~ ~SPPR110~ ~SPPR111~
 			   ~SPWI804~ ~SPWI808~
 			   ~SPWI902~ ~SPWI907~ ~SPWI915~ ~SPWI916~
 			   ~SPIN103~
-			   ~SPCL152~ ~SPCL232~ ~SPCL321~ ~SPCL423~ 
-			   ~SPCL521~ ~SPCL521~ ~SPCL721~ ~SPCL731~
+			   ~SPCL232~  
+			   ~SPCL721~ ~SPCL731~
 			   ~SPCL732~ ~SPCL741~
-			   ~SPCL904~ ~SPCL907~ ~SPCL913~ ~SPCL914~ ~SPCL917~
   BEGIN
   ACTION_IF FILE_EXISTS_IN_GAME ~%spell%.SPL~ THEN BEGIN
     COPY_EXISTING ~%spell%.SPL~ ~override~
@@ -105,6 +106,16 @@ ACTION_FOR_EACH ~spell~ IN ~SPPR109~ ~SPPR110~ ~SPPR111~
   END
 END
 
+//Buffs that only target the caster and can't be dispelled
+ACTION_FOR_EACH spell IN ~SPCL152~ ~SPCL321~ ~SPCL423~ ~SPCL521~ ~SPCL522~
+						 ~SPCL904~ ~SPCL907~ ~SPCL913~ ~SPCL914~ ~SPCL917~
+BEGIN
+	COPY_EXISTING ~%spell%.spl~ ~override~
+		LPF ~HANDLE_TARGET_GROUP~ INT_VAR targ = 1 dispel = 2 END
+	IF_EXISTS
+END
+
+//Buffs that affect a target
 ACTION_FOR_EACH ~spell~ IN ~SPPR101~ ~SPPR107~ ~SPPR108~
 			   ~SPPR201~ ~SPPR202~ ~SPPR210~
 			   ~SPPR306~ ~SPPR312~
@@ -119,6 +130,7 @@ ACTION_FOR_EACH ~spell~ IN ~SPPR101~ ~SPPR107~ ~SPPR108~
 			   ~SPWI613~ ~SPWI606~
 			   ~SPWI702~ ~SPWI721~
 			   ~SPWI803~
+			   ~SPCL213~
   BEGIN
   ACTION_IF FILE_EXISTS_IN_GAME ~%spell%.SPL~ THEN BEGIN
     COPY_EXISTING ~%spell%.SPL~ ~override~
@@ -147,7 +159,7 @@ ACTION_IF FILE_EXISTS_IN_GAME ~SPPR203D.spl~ BEGIN
   BUT_ONLY
 END
 
-//some mod-added spells
+//SCS added spells
 ACTION_FOR_EACH filename IN ~dw#sp101~ ~dw#sp108~ ~dw#sp110~ ~dw#sp111~ ~dw#sp202~ ~dw#sp206~ ~dw#sp214~
 			    ~dw#sp306~ ~dw#sp403~ ~dw#sp406~ ~dw#sp409~ ~dw#sp412~ ~dw#sp501~ ~dw#sp506~
 			    ~dw#sp508~ ~dw#sp509~ ~dw#sp513~ ~dw#sp603~ ~dw#sp613~ ~dw#sp701~ ~dw#sp711~
@@ -162,6 +174,14 @@ BEGIN
       LPF ~HANDLE_TARGET_GROUP~ INT_VAR targ = 1 END
     BUT_ONLY
   END
+END
+
+//Rogue rebalancing added spells
+ACTION_FOR_EACH filename IN ~RR#THL02~ ~RR#THL03~ ~RR#WDIS~ ~RR#BHL05~ ~RR#BHL06~
+BEGIN
+	COPY_EXISTING ~%filename%.spl~ ~override~
+		LPF ~HANDLE_TARGET_GROUP~ INT_VAR targ = 1 dispel = 0 END
+	IF_EXISTS
 END
 
 //Time stop
