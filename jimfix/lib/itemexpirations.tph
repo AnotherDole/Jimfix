@@ -14,12 +14,12 @@ BEGIN
 			longestDur = duration
 		END
 	END
-	stringToAdd = RESOLVE_STR_REF("%itemName% has expired.")
+	stringToAdd = RESOLVE_STR_REF(@207)
 	LPF ADD_ITEM_EFFECT INT_VAR opcode = 139 target = targetType timing = 4 header = 1 parameter1 = stringToAdd resist_dispel = 3 duration = longestDur END
 	PATCH_FOR_EACH limit IN 6 12 30 60 120 300 BEGIN
 		PATCH_IF longestDur > limit BEGIN
 			dur = longestDur - limit
-			stringToAdd = RESOLVE_STR_REF("%itemName% expires in %limit% seconds.")
+			stringToAdd = RESOLVE_STR_REF(@208)
 			LPF ADD_ITEM_EFFECT INT_VAR opcode = 139 target = targetType timing = 4 header = 1 parameter1 = stringToAdd resist_dispel = 3 duration = dur END
 		END
 	END

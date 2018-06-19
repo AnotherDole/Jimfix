@@ -36,12 +36,12 @@ BEGIN
       longestDur = overrideDur
     END
 	headerNum = abNum + 1
-	stringToAdd = RESOLVE_STR_REF("%spellName% has expired")
+	stringToAdd = RESOLVE_STR_REF(@200)
 	LPF ADD_SPELL_EFFECT INT_VAR opcode = 139 header = headerNum target = targ timing = 4 resist_dispel = dispel duration = longestDur parameter1 = stringToAdd insert_point = insertPos END
     PATCH_FOR_EACH limit IN 6 12 30 60 120 BEGIN
       PATCH_IF longestDur > limit BEGIN
 	    dur = longestDur - limit
-		stringToAdd = RESOLVE_STR_REF("%spellName% expires in %limit% seconds")
+		stringToAdd = RESOLVE_STR_REF(@201)
 		LPF ADD_SPELL_EFFECT INT_VAR opcode = 139 header = headerNum target = targ timing = 4 resist_dispel = dispel duration = dur parameter1 = stringToAdd insert_point = insertPos END
       END
     END
@@ -168,7 +168,7 @@ ACTION_IF FILE_EXISTS_IN_GAME ~SPWI909.SPL~ BEGIN
 		PATCH_FOR_EACH limit IN 1 2 3 4 5 6 12 BEGIN
 			dur = 18 - limit
 			limit = limit - 1
-			stringToAdd = RESOLVE_STR_REF("Time stop ends in %limit%.5 seconds")
+			stringToAdd = RESOLVE_STR_REF(@202)
 			LPF ADD_SPELL_EFFECT INT_VAR opcode = 139 target = 1 timing = 4 header = 1 parameter1 = stringToAdd resist_dispel = 3 duration = dur END
 		END
 
@@ -181,7 +181,7 @@ ACTION_IF FILE_EXISTS_IN_GAME ~SPCL912B.SPL~ BEGIN
 		PATCH_FOR_EACH limit IN 1 2 3 4 5 6 BEGIN
 			dur = 10 - limit
 			limit = limit - 1
-			stringToAdd = RESOLVE_STR_REF("Time trap ends in %limit%.5 seconds")
+			stringToAdd = RESOLVE_STR_REF(@203)
 			LPF ADD_SPELL_EFFECT INT_VAR opcode = 139 target = 9 timing = 4 header = 1 parameter1 = stringToAdd resist_dispel = 3 duration = dur END
 		END
 	BUT_ONLY
@@ -193,15 +193,15 @@ ACTION_FOR_EACH filename IN ~SPWISH17.SPL~ ~DW#WISH3.SPL~ BEGIN
 		COPY_EXISTING ~%filename%~ ~override~
 			PATCH_FOR_EACH limit IN 12 6 BEGIN
 				dur = 24 - limit
-				stringToAdd = RESOLVE_STR_REF("Improved Alacrity expires in %limit% seconds")
+				stringToAdd = RESOLVE_STR_REF(@204)
 				LPF ADD_SPELL_EFFECT INT_VAR opcode = 139 target = 1 timing = 4 header = 1 parameter1 = stringToAdd resist_dispel = 3 duration = dur END
 			END
-			stringToAdd = RESOLVE_STR_REF("Improved Alacrity has expired")
+			stringToAdd = RESOLVE_STR_REF(@205)
 			LPF ADD_SPELL_EFFECT INT_VAR opcode = 139 target = 1 timing = 4 header = 1 parameter1 = stringToAdd resist_dispel = 3 duration = 24 END
 			PATCH_FOR_EACH limit IN 1 2 3 4 5 6 12 BEGIN
 				dur = 36 - limit
 				limit = limit - 1
-				stringToAdd = RESOLVE_STR_REF("Time stop ends in %limit%.5 seconds")
+				stringToAdd = RESOLVE_STR_REF(@206)
 				LPF ADD_SPELL_EFFECT INT_VAR opcode = 139 target = 1 timing = 4 header = 1 parameter1 = stringToAdd resist_dispel = 3 duration = dur END
 			END
 		BUT_ONLY

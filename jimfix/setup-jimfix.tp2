@@ -1,12 +1,14 @@
 BACKUP ~Jimfix/backup~
 AUTHOR ~anotherdole@gmail.com~
-VERSION ~v2.4~
+VERSION ~v2.5~
 
 README ~jimfix/readme/readme.txt~
 
-BEGIN ~Fix Sunfire power levels~
+LANGUAGE ~English~     ~english~     ~jimfix/languages/english/setup.tra~
+
+BEGIN @10
 DESIGNATED 0
-GROUP ~Fixes~
+GROUP @1
 COPY_EXISTING ~spwi523.spl~ ~override~
   LPF ALTER_SPELL_EFFECT INT_VAR match_opcode = 12 power = 5 END
 BUT_ONLY
@@ -16,27 +18,27 @@ ACTION_IF FILE_EXISTS_IN_GAME ~dw#0w523.spl~ BEGIN
   BUT_ONLY
 END
 
-BEGIN ~Enable Spell Immunity in Sequencers/Triggers~
+BEGIN @11
 DESIGNATED 1
-GROUP ~Fixes~
-REQUIRE_PREDICATE FILE_EXISTS_IN_GAME ~tobex_ini/tobexcore.ini~ ~Requires TobEx~
+GROUP @1
+REQUIRE_PREDICATE FILE_EXISTS_IN_GAME ~tobex_ini/tobexcore.ini~ @28
 COPY_EXISTING ~contingx.2da~ ~override~
   REPLACE_TEXTUALLY ~SPWI510~ ~****   ~
 BUT_ONLY
 
-BEGIN ~Shield of Reflection works on SCS Flame Arrows~
+BEGIN @12
 DESIGNATED 2
-GROUP ~Fixes~
-REQUIRE_PREDICATE FILE_EXISTS ~override/dw#pro_NM.mrk~ ~Required SCS component not installed.~
+GROUP @1
+REQUIRE_PREDICATE FILE_EXISTS ~override/dw#pro_NM.mrk~ @29
 COPY_EXISTING ~shld24.itm~ ~override~
   LPF ADD_ITEM_EQEFFECT INT_VAR opcode = 197 target = 1 parameter2 = IDS_OF_SYMBOL(projectl "dw#flam") timing = 2 END
 BUT_ONLY
 
-BEGIN ~Fix Smarter Abazigal~
+BEGIN @13
 DESIGNATED 3
-GROUP ~Fixes~
-REQUIRE_PREDICATE FILE_EXISTS_IN_GAME ~abazdg02.cre~ ~Requires Ascension~
-REQUIRE_PREDICATE FILE_EXISTS ~override/dw#ascension_abazigal.mrk~ ~Requires Smarter Abazigal~
+GROUP @1
+REQUIRE_PREDICATE FILE_EXISTS_IN_GAME ~abazdg02.cre~ @30
+REQUIRE_PREDICATE FILE_EXISTS ~override/dw#ascension_abazigal.mrk~ @31
 COPY_EXISTING ~dragblue.cre~ ~override~
   WRITE_ASCII 0x0250 ~dragblue~
 BUT_ONLY
@@ -44,29 +46,29 @@ COPY_EXISTING ~dragblue.bcs~ ~override~
   REPLACE_BCS_BLOCK ~jimfix/baf/abazconting.baf~ ~jimfix/baf/abazcontingtamah.baf~
 BUT_ONLY
 
-BEGIN ~Fix Smarter Irenicus at the Throne~
+BEGIN @14
 DESIGNATED 4
-GROUP ~Fixes~
-REQUIRE_PREDICATE FILE_EXISTS_IN_GAME ~finiren.cre~ ~Requires Ascension~
-REQUIRE_PREDICATE FILE_EXISTS ~override/dw#ascension_sendai_irenicus.mrk~ ~Requires Smarter Ascension Irenicus~
+GROUP @1
+REQUIRE_PREDICATE FILE_EXISTS_IN_GAME ~finiren.cre~ @30
+REQUIRE_PREDICATE FILE_EXISTS ~override/dw#ascension_sendai_irenicus.mrk~ @32
 COPY_EXISTING ~finiren.bcs~ ~override~
   DECOMPILE_AND_PATCH BEGIN
     REPLACE_TEXTUALLY ~ReallyForceSpell(Myself,WIZARD_MISLEAD)~ ~ReallyForceSpellRES("dw#0w607",Myself)~
   END
 BUT_ONLY
 
-BEGIN ~Remove entourage from Ascension Fallen Solars~
+BEGIN @15
 DESIGNATED 5
-GROUP ~Fixes~
-REQUIRE_PREDICATE FILE_EXISTS_IN_GAME ~finsolar.cre~ ~Requires Ascension~
-REQUIRE_PREDICATE FILE_EXISTS ~override/dw#celestial.mrk~ ~Requires Smarter Celestials~
+GROUP @1
+REQUIRE_PREDICATE FILE_EXISTS_IN_GAME ~finsolar.cre~ @30
+REQUIRE_PREDICATE FILE_EXISTS ~override/dw#celestial.mrk~ @33
 COPY_EXISTING ~finsol04.bcs~ ~override~
   REPLACE_BCS_BLOCK ~jimfix/baf/solarbad.baf~ ~jimfix/baf/empty.baf~
 BUT_ONLY
 
-BEGIN ~Check for and fix incorrect spell animations~
+BEGIN @16
 DESIGNATED 100
-GROUP ~Fixes~
+GROUP @1
 INCLUDE ~jimfix/lib/schoolcheck.tph~
 COPY_EXISTING ~SPPR604.SPL~ ~override~ //fix vanilla bug with this spell
   WRITE_BYTE 0x25 2 //set its school to conjuration
@@ -86,10 +88,10 @@ COPY_EXISTING_REGEXP GLOB ~SPWI[0-9]*\.spl\|SPPR[0-9]*\.spl~ ~override~
   END
 BUT_ONLY
 
-BEGIN ~Prevent silent prebuffs~
+BEGIN @17
 DESIGNATED 400
-GROUP ~Tweaks~
-REQUIRE_PREDICATE FILE_EXISTS ~override/dw#mage.mrk~ ~Requires Smarter Mages~
+GROUP @2
+REQUIRE_PREDICATE FILE_EXISTS ~override/dw#mage.mrk~ @34
 ACTION_FOR_EACH filename IN ~dw#sw102~ ~dw#sw408~ ~dw#sw319~ ~dw#sw606~ ~dw#sw512~ ~dw#sw517~ ~dw#sw320~ 
 BEGIN
   ACTION_IF FILE_EXISTS_IN_GAME ~%filename%.spl~ BEGIN
@@ -100,54 +102,54 @@ BEGIN
   END
 END
 
-BEGIN ~All spells with a casting time greater than 1~
+BEGIN @18
 DESIGNATED 201
-GROUP ~Tweaks~
-SUBCOMPONENT ~Add spell school notifications to the combat log~
+GROUP @2
+SUBCOMPONENT @23
 INCLUDE ~jimfix/lib/schoolnotes.tph~
 LAF ADD_SCHOOL_NOTIFICATIONS INT_VAR threshold = 1 END
 
-BEGIN ~All spells with a casting time greater than 2~
+BEGIN @19
 DESIGNATED 202
-GROUP ~Tweaks~
-SUBCOMPONENT ~Add spell school notifications to the combat log~
+GROUP @2
+SUBCOMPONENT @23
 INCLUDE ~jimfix/lib/schoolnotes.tph~
 LAF ADD_SCHOOL_NOTIFICATIONS INT_VAR threshold = 2 END
 
-BEGIN ~All spells with a casting time greater than 3~
+BEGIN @20
 DESIGNATED 203
-GROUP ~Tweaks~
-SUBCOMPONENT ~Add spell school notifications to the combat log~
+GROUP @2
+SUBCOMPONENT @23
 INCLUDE ~jimfix/lib/schoolnotes.tph~
 LAF ADD_SCHOOL_NOTIFICATIONS INT_VAR threshold = 3 END
 
-BEGIN ~All spells with a casting time greater than 4~
+BEGIN @21
 DESIGNATED 204
-GROUP ~Tweaks~
-SUBCOMPONENT ~Add spell school notifications to the combat log~
+GROUP @2
+SUBCOMPONENT @23
 INCLUDE ~jimfix/lib/schoolnotes.tph~
 LAF ADD_SCHOOL_NOTIFICATIONS INT_VAR threshold = 4 END
 
-BEGIN ~All spells with a casting time greater than 5~
+BEGIN @22
 DESIGNATED 205
-GROUP ~Tweaks~
-SUBCOMPONENT ~Add spell school notifications to the combat log~
+GROUP @2
+SUBCOMPONENT @23
 INCLUDE ~jimfix/lib/schoolnotes.tph~
 LAF ADD_SCHOOL_NOTIFICATIONS INT_VAR threshold = 5 END
 
-BEGIN ~Add expiration notifications for buffs~
+BEGIN @24
 DESIGNATED 300
-GROUP ~Tweaks~
+GROUP @2
 INCLUDE ~jimfix/lib/expirations.tph~
 
-BEGIN ~Add expiration notifications for item buffs~
+BEGIN @25
 DESIGNATED 600
-GROUP ~Tweaks~
+GROUP @2
 INCLUDE ~jimfix/lib/itemexpirations.tph~
 
-BEGIN ~Reveal all hidden doors~
+BEGIN @26
 DESIGNATED 500
-GROUP ~Tweaks~
+GROUP @2
 COPY_EXISTING_REGEXP GLOB ~.*\.are~ ~override~
 	READ_LONG 0xa8	door_offset
 	READ_LONG 0xa4	door_count
@@ -159,9 +161,9 @@ COPY_EXISTING_REGEXP GLOB ~.*\.are~ ~override~
 	END
 BUT_ONLY
 
-BEGIN ~Allow Spell Shield to block Wish Breach and Mordenkainen's Disjunction~
+BEGIN @27 
 DESIGNATED 700
-GROUP ~Tweaks~
+GROUP @2
 //Fix wish breach
 COPY_EXISTING ~DW#WISH1.SPL~ ~override/JF#WISHA.SPL~
 	LPF ALTER_SPELL_HEADER INT_VAR projectile = 1 END

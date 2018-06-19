@@ -27,14 +27,14 @@ INT_VAR
 "threshold" = "1"
 BEGIN
   COPY_EXISTING_REGEXP GLOB ~SPWI[0-9]*\.spl\|SPPR[0-9]*\.spl~ ~override~
-    SET abjstring = RESOLVE_STR_REF("is casting an Abjuration spell") 
-    SET constring = RESOLVE_STR_REF("is casting a Conjuration spell")
-    SET divstring = RESOLVE_STR_REF("is casting a Divination spell")
-    SET encstring = RESOLVE_STR_REF("is casting an Enchantment spell")
-    SET illstring = RESOLVE_STR_REF("is casting an Illusion spell")
-    SET evostring = RESOLVE_STR_REF("is casting an Evocation spell")
-    SET necstring = RESOLVE_STR_REF("is casting a Necromancy spell")
-    SET altstring = RESOLVE_STR_REF("is casting an Alteration spell")
+    SET abjstring = RESOLVE_STR_REF(@100) 
+    SET constring = RESOLVE_STR_REF(@101)
+    SET divstring = RESOLVE_STR_REF(@102)
+    SET encstring = RESOLVE_STR_REF(@103)
+    SET illstring = RESOLVE_STR_REF(@104)
+    SET evostring = RESOLVE_STR_REF(@105)
+    SET necstring = RESOLVE_STR_REF(@106)
+    SET altstring = RESOLVE_STR_REF(@107)
     
     READ_SHORT 0x22	      castanim
     READ_LONG  0x64	      aboff
@@ -75,14 +75,14 @@ BEGIN
   BEGIN
     ACTION_IF FILE_EXISTS_IN_GAME ~%spellname%.spl~ BEGIN
       COPY_EXISTING ~%spellname%.spl~ ~override~
-	SET abjstring = RESOLVE_STR_REF("is casting an Abjuration spell") 
-	SET constring = RESOLVE_STR_REF("is casting a Conjuration spell")
-	SET divstring = RESOLVE_STR_REF("is casting a Divination spell")
-	SET encstring = RESOLVE_STR_REF("is casting an Enchantment spell")
-	SET illstring = RESOLVE_STR_REF("is casting an Illusion spell")
-	SET evostring = RESOLVE_STR_REF("is casting an Evocation spell")
-	SET necstring = RESOLVE_STR_REF("is casting a Necromancy spell")
-	SET altstring = RESOLVE_STR_REF("is casting an Alteration spell")
+	SET abjstring = RESOLVE_STR_REF(@100) 
+	SET constring = RESOLVE_STR_REF(@101)
+	SET divstring = RESOLVE_STR_REF(@102)
+	SET encstring = RESOLVE_STR_REF(@103)
+	SET illstring = RESOLVE_STR_REF(@104)
+	SET evostring = RESOLVE_STR_REF(@105)
+	SET necstring = RESOLVE_STR_REF(@106)
+	SET altstring = RESOLVE_STR_REF(@107)
 	
 	READ_SHORT 0x22	      castanim
 	READ_LONG  0x64	      aboff

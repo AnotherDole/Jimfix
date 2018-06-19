@@ -1,0 +1,47 @@
+@1 = ~Fixes~
+@2 = ~Tweaks~
+
+@10 = ~Fix Sunfire power levels~
+@11 = ~Enable Spell Immunity in Sequencers/Triggers~
+@12 = ~Shield of Reflection works on SCS Flame Arrows~
+@13 = ~Fix Smarter Abazigal~
+@14 = ~Fix Smarter Irenicus at the Throne~
+@15 = ~Remove entourage from Ascension Fallen Solars~
+@16 = ~Check for and fix incorrect spell animations~
+@17 = ~Prevent silent prebuffs~
+@18 = ~All spells with a casting time greater than 1~
+@19 = ~All spells with a casting time greater than 2~
+@20 = ~All spells with a casting time greater than 3~
+@21 = ~All spells with a casting time greater than 4~
+@22 = ~All spells with a casting time greater than 5~
+@23 = ~Add spell school notifications to the combat log~
+@24 = ~Add expiration notifications for buffs~
+@25 = ~Add expiration notifications for item buffs~
+@26 = ~Reveal all hidden doors~
+@27 = ~Allow Spell Shield to block Wish Breach and Mordenkainen's Disjunction~
+@28 = ~Requires TobEx~
+@29 = ~Required SCS component not installed.~
+@30 = ~Requires Ascension~
+@31 = ~Requires Smarter Abazigal~
+@32 = ~Requires Smarter Ascension Irenicus~
+@33 = ~Requires Smarter Celestials~
+@34 = ~Requires Smarter Mages~
+
+@100 = ~is casting an Abjuration spell~
+@101 = ~is casting a Conjuration spell~
+@102 = ~is casting a Divination spell~
+@103 = ~is casting an Enchantment spell~
+@104 = ~is casting an Illusion spell~
+@105 = ~is casting an Evocation spell~
+@106 = ~is casting a Necromancy spell~
+@107 = ~is casting an Alteration spell~
+
+@200 = ~%spellName% has expired~
+@201 = ~%spellName% expires in %limit% seconds~
+@202 = ~Time stop ends in %limit%.5 seconds~
+@203 = ~Time trap ends in %limit%.5 seconds~
+@204 = ~Improved Alacrity expires in %limit% seconds~
+@205 = ~Improved Alacrity has expired~
+@206 = ~Time stop ends in %limit%.5 seconds~
+@207 = ~%itemName% has expired.~
+@208 = ~%itemName% expires in %limit% seconds.~
