@@ -1,21 +1,7 @@
-DEFINE_PATCH_FUNCTION ~INSERT_EXPIRE_MESSAGE~
-INT_VAR
-"offset" = "0"
-"mult" = "0"
-"duration" = "0"
-"target" = "0"
-"dispel" = 3
-STR_VAR
-"message" = ""
-BEGIN
-    INSERT_BYTES    (offset + (0x30 * mult))       0x30		  //add new effect
-      WRITE_SHORT   (offset + (0x30 * mult)) + 0x00 139		  //display string
-      WRITE_BYTE    (offset + (0x30 * mult)) + 0x02   ~%target%~  //target
-      SAY_EVALUATED (offset + (0x30 * mult)) + 0x04  ~%message%~
-      WRITE_BYTE    (offset + (0x30 * mult)) + 0x0C   4		  //timing mode: delay/permanent
-      WRITE_BYTE    (offset + (0x30 * mult)) + 0x0D   ~%dispel%~  //dispel mode
-      WRITE_LONG    (offset + (0x30 * mult)) + 0x0E  ~%duration%~  //duration
-      WRITE_BYTE    (offset + (0x30 * mult)) + 0x12  100	  //probability
+ACTION_IF GAME_IS ~bgee bg2ee eet~ THEN BEGIN
+  OUTER_SET insertPos = "-1" //In EE, place the notifications at the end so they are not removed by the remove spell effect
+END ELSE BEGIN
+  OUTER_SET insertPos = 0 //In classic, place the notifications at the start so they are not blocked by the protection from spell effect
 END
 
 DEFINE_PATCH_FUNCTION ~HANDLE_TARGET_GROUP~
@@ -26,7 +12,6 @@ INT_VAR
 STR_VAR
 "overrideName" = ""
 BEGIN
-  effAddTotal = 0
   READ_STRREF 0x08 spellName
   PATCH_IF NOT ("%overrideName%" STRING_EQUAL "") THEN BEGIN
     TEXT_SPRINT spellName "%overrideName%"
@@ -34,18 +19,14 @@ BEGIN
   READ_LONG   0x64 abOffset
   READ_SHORT  0x68 abTotal
   READ_LONG   0x6a efOffset
-  READ_SHORT  0x70 glTotal
   FOR (abNum = 0; abNum < abTotal; abNum += 1) BEGIN
-    thisEfAdd = 0
     //find the effect with the longest duration
     READ_SHORT (abOffset + (0x28 * abNum) + 0x1E) thisEfNum
     READ_SHORT (abOffset + (0x28 * abNum) + 0x20) thisEfFirst
-    thisEfFirst += effAddTotal
-    WRITE_SHORT (abOffset + (0x28 * abNum) + 0x20) thisEfFirst
     longestDur = 0
     PATCH_IF overrideDur = 0 THEN BEGIN
       FOR (efNum = 0; efNum < thisEfNum; efNum += 1) BEGIN
-		READ_LONG (efOffset + (0x30 * (thisEfFirst + efNum)) + 0xE) dur
+		READ_LONG (efOffset + (0x30 * (efNum + thisEfFirst)) + 0xE) dur
 		PATCH_IF dur > longestDur BEGIN
 			longestDur = dur
 		END
@@ -54,19 +35,16 @@ BEGIN
     PATCH_IF overrideDur > 0 THEN BEGIN
       longestDur = overrideDur
     END
-    LPF ~INSERT_EXPIRE_MESSAGE~ INT_VAR offset = efOffset mult = thisEfFirst duration = longestDur target = "%targ%" dispel = dispel
-      STR_VAR message = ~%spellName% has expired~ END
-    effAddTotal += 1
-    thisEfAdd += 1
+	headerNum = abNum + 1
+	stringToAdd = RESOLVE_STR_REF("%spellName% has expired")
+	LPF ADD_SPELL_EFFECT INT_VAR opcode = 139 header = headerNum target = targ timing = 4 resist_dispel = dispel duration = longestDur parameter1 = stringToAdd insert_point = insertPos END
     PATCH_FOR_EACH limit IN 6 12 30 60 120 BEGIN
       PATCH_IF longestDur > limit BEGIN
-		LPF ~INSERT_EXPIRE_MESSAGE~ INT_VAR offset = efOffset mult = thisEfFirst duration = (longestDur - limit) target = "%targ%" dispel = dispel
-		STR_VAR message = ~%spellName% expires in %limit% seconds~ END
-		effAddTotal += 1
-		thisEfAdd += 1
+	    dur = longestDur - limit
+		stringToAdd = RESOLVE_STR_REF("%spellName% expires in %limit% seconds")
+		LPF ADD_SPELL_EFFECT INT_VAR opcode = 139 header = headerNum target = targ timing = 4 resist_dispel = dispel duration = dur parameter1 = stringToAdd insert_point = insertPos END
       END
     END
-    WRITE_SHORT (abOffset + (0x28 * abNum) + 0x1E) (thisEfNum + thisEfAdd) //update ability effect #
   END
 END
 
