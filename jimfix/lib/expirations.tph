@@ -1,9 +1,3 @@
-ACTION_IF GAME_IS ~bgee bg2ee eet~ THEN BEGIN
-  OUTER_SET insertPos = "-1" //In EE, place the notifications at the end so they are not removed by the remove spell effect
-END ELSE BEGIN
-  OUTER_SET insertPos = 0 //In classic, place the notifications at the start so they are not blocked by the protection from spell effect
-END
-
 DEFINE_PATCH_FUNCTION ~HANDLE_TARGET_GROUP~
 INT_VAR
 "targ" = 0
@@ -48,6 +42,18 @@ BEGIN
   END
 END
 
+//Special case for berserker enrage - messages should always be inserted at start
+OUTER_SET insertPos = 0
+COPY_EXISTING ~SPCL321.spl~ ~override~
+	LPF ~HANDLE_TARGET_GROUP~ INT_VAR targ = 1 dispel = 2 END
+IF_EXISTS
+
+ACTION_IF GAME_IS ~bgee bg2ee eet~ THEN BEGIN
+  OUTER_SET insertPos = "-1" //In EE, place the notifications at the end so they are not removed by the remove spell effect
+END ELSE BEGIN
+  OUTER_SET insertPos = 0 //In classic, place the notifications at the start so they are not blocked by the protection from spell effect
+END
+
 //Fix glitch that causes expiration notices to be wrong at high levels for Holy Power
 ACTION_IF FILE_EXISTS_IN_GAME ~SPPR412.SPL~ BEGIN
 	COPY_EXISTING ~SPPR412.SPL~ ~override~
@@ -85,7 +91,7 @@ ACTION_FOR_EACH ~spell~ IN ~SPPR109~ ~SPPR110~ ~SPPR111~
 END
 
 //Buffs that only target the caster and can't be dispelled
-ACTION_FOR_EACH spell IN ~SPCL152~ ~SPCL321~ ~SPCL423~ ~SPCL521~ ~SPCL522~
+ACTION_FOR_EACH spell IN ~SPCL152~ ~SPCL423~ ~SPCL521~ ~SPCL522~
 						 ~SPCL904~ ~SPCL907~ ~SPCL913~ ~SPCL914~ ~SPCL917~
 BEGIN
 	COPY_EXISTING ~%spell%.spl~ ~override~
