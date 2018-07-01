@@ -6,6 +6,7 @@ INT_VAR
 STR_VAR
 "overrideName" = ""
 BEGIN
+  insertPos = "-1" // Start by assuming the messages should go as the last effects
   READ_STRREF 0x08 spellName
   PATCH_IF NOT ("%overrideName%" STRING_EQUAL "") THEN BEGIN
     TEXT_SPRINT spellName "%overrideName%"
@@ -18,14 +19,19 @@ BEGIN
     READ_SHORT (abOffset + (0x28 * abNum) + 0x1E) thisEfNum
     READ_SHORT (abOffset + (0x28 * abNum) + 0x20) thisEfFirst
     longestDur = 0
-    PATCH_IF overrideDur = 0 THEN BEGIN
-      FOR (efNum = 0; efNum < thisEfNum; efNum += 1) BEGIN
-		READ_LONG (efOffset + (0x30 * (efNum + thisEfFirst)) + 0xE) dur
-		PATCH_IF dur > longestDur BEGIN
-			longestDur = dur
+    FOR (efNum = 0; efNum < thisEfNum; efNum += 1) BEGIN
+      READ_LONG (efOffset + (0x30 * (efNum + thisEfFirst)) + 0xE) dur
+	  PATCH_IF dur > longestDur BEGIN
+	    longestDur = dur
+	  END
+	  READ_SHORT (efOffset + (0x30 * (efNum + thisEfFirst)) + 0x0) opcode
+	  PATCH_IF opcode = 206 BEGIN //Found a protection from spell opcode BEGIN
+		READ_ASCII (efOffset + (0x30 * (efNum + thisEfFirst)) + 0x14) protName // Find out which spell
+		PATCH_IF ~%protName%.spl~ STR_EQ ~%SOURCE_FILE%~ BEGIN //If it's the one we're currently changing
+		  insertPos = efNum //Insert messages before the protection from spell effect
 		END
-	   END
-    END
+	  END
+	END
     PATCH_IF overrideDur > 0 THEN BEGIN
       longestDur = overrideDur
     END
@@ -40,18 +46,6 @@ BEGIN
       END
     END
   END
-END
-
-//Special case for berserker enrage - messages should always be inserted at start
-OUTER_SET insertPos = 0
-COPY_EXISTING ~SPCL321.spl~ ~override~
-	LPF ~HANDLE_TARGET_GROUP~ INT_VAR targ = 1 dispel = 2 END
-IF_EXISTS
-
-ACTION_IF GAME_IS ~bgee bg2ee eet~ THEN BEGIN
-  OUTER_SET insertPos = "-1" //In EE, place the notifications at the end so they are not removed by the remove spell effect
-END ELSE BEGIN
-  OUTER_SET insertPos = 0 //In classic, place the notifications at the start so they are not blocked by the protection from spell effect
 END
 
 //Fix glitch that causes expiration notices to be wrong at high levels for Holy Power
@@ -91,7 +85,7 @@ ACTION_FOR_EACH ~spell~ IN ~SPPR109~ ~SPPR110~ ~SPPR111~
 END
 
 //Buffs that only target the caster and can't be dispelled
-ACTION_FOR_EACH spell IN ~SPCL152~ ~SPCL423~ ~SPCL521~ ~SPCL522~
+ACTION_FOR_EACH spell IN ~SPCL152~ ~SPCL321~ ~SPCL423~ ~SPCL521~ ~SPCL522~
 						 ~SPCL904~ ~SPCL907~ ~SPCL913~ ~SPCL914~ ~SPCL917~
 BEGIN
 	COPY_EXISTING ~%spell%.spl~ ~override~
